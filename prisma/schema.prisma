@@ -1,0 +1,299 @@
+// MMORPG Panel — database schema
+// Default: SQLite (zero-config). Switch `provider` to "mysql" or "postgresql"
+// for production, then run `npx prisma db push`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────── Users ───────────────
+model User {
+  id             Int           @id @default(autoincrement())
+  username       String        @unique
+  email          String        @unique
+  passwordHash   String
+  role           String        @default("player") // player | gm | admin
+  silver         Int           @default(0)        // in-game currency credit
+  vipUntil       DateTime?
+  banned         Boolean       @default(false)
+  banReason      String?
+  online         Boolean       @default(false)
+  characterName  String?
+  characterClass String?
+  level          Int           @default(1)
+  avatarColor    String?       // hex color used for avatar background
+  bio            String?       // optional profile bio
+  discordId      String?       @unique
+  createdAt      DateTime      @default(now())
+  lastLogin      DateTime?
+  threads        ForumThread[]
+  posts          ForumPost[]
+  payments       Payment[]
+  kills          MonsterKill[]
+  notifications  Notification[]
+  sentMessages       DirectMessage[] @relation("DMSent")
+  receivedMessages   DirectMessage[] @relation("DMReceived")
+  profilePostsAuthored ProfilePost[] @relation("ProfilePostsAuthored")
+  profilePostsReceived ProfilePost[] @relation("ProfilePostsReceived")
+  chatMessages   ChatMessage[]
+
+  @@index([role])
+}
+
+// ─────────────── Install state ───────────────
+// Singleton row that tracks whether the install wizard has been completed.
+// While `completed` is false, every request is redirected to /install.
+model InstallState {
+  id          Int      @id @default(1)
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────── License (cached) ───────────────
+// Cached license validation. The CMS revalidates against the license server
+// roughly once a day. If the cached result says inactive, we hard-lock the
+// site to /licensed-expired.
+model License {
+  id              Int       @id @default(1)
+  key             String    @default("")
+  serverUrl       String    @default("")  // license server validate endpoint
+  signingKey      String    @default("")  // shared HMAC secret for response verification
+  status          String    @default("unverified") // active | past_due | cancelled | refunded | unknown | unverified
+  expiresAt       DateTime?
+  lastCheckedAt   DateTime?
+  lastCheckOk     Boolean   @default(false)
+  lastCheckError  String?
+  signature       String?   // last server-signed payload signature (audit)
+  updatedAt       DateTime  @updatedAt
+}
+model ServerConfig {
+  id             Int      @id @default(1)
+  serverName     String   @default("My MMORPG Server")
+  motd           String   @default("Welcome, adventurer!")
+  maxPlayers     Int      @default(1000)
+  online         Boolean  @default(true)
+  registrationOpen Boolean @default(true)
+  experienceRate Float    @default(1.0)
+  goldRate       Float    @default(1.0)
+  dropRate       Float    @default(1.0)
+  pvpEnabled     Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+// ─────────────── News ───────────────
+model NewsPost {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  author    String   @default("Staff")
+  category  String   @default("announcement") // announcement | patch | event
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// ─────────────── Server events ───────────────
+model GameEvent {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  startsAt    DateTime
+  endsAt      DateTime?
+  location    String?
+  rewards     String?   // free-text e.g. "5x EXP, unique drops"
+  createdAt   DateTime  @default(now())
+
+  @@index([startsAt])
+}
+
+// ─────────────── Game database connection ───────────────
+// Connection settings for the *game's* MySQL database (vsro/jsro/etc).
+// This is separate from the panel's own Prisma database — the panel
+// reads live data (accounts, kills, drops) from this connection.
+// Stored as a singleton (id = 1). Passwords are stored encrypted via
+// the lib/crypto helper.
+model GameDbConfig {
+  id              Int      @id @default(1)
+  enabled         Boolean  @default(false)
+  host            String   @default("127.0.0.1")
+  port            Int      @default(3306)
+  database        String   @default("")
+  user            String   @default("")
+  passwordEnc     String   @default("")  // AES-encrypted; see lib/crypto.js
+  // Table/column names — different emulators use slightly different schemas
+  accountTable    String   @default("TB_User")
+  accountIdCol    String   @default("JID")
+  accountUserCol  String   @default("StrUserID")
+  accountPassCol  String   @default("password")
+  accountEmailCol String   @default("Email")
+  uniqueKillTable String   @default("_UniqueKillLog")
+  rareDropTable   String   @default("_SoxItemLog")
+  lastTestedAt    DateTime?
+  lastTestOk      Boolean  @default(false)
+  lastTestError   String?
+  updatedAt       DateTime @updatedAt
+}
+
+// ─────────────── Monsters ───────────────
+model Monster {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  level       Int            @default(1)
+  rarity      String         @default("common") // common | rare | unique | boss
+  zone        String?
+  hp          Int            @default(1000)
+  spawnRate   Int            @default(60) // seconds between possible respawns
+  description String?
+  spawns      MonsterSpawn[]
+  kills       MonsterKill[]
+
+  @@index([rarity])
+}
+
+model MonsterSpawn {
+  id        Int      @id @default(autoincrement())
+  monsterId Int
+  zone      String?
+  spawnedAt DateTime @default(now())
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+
+  @@index([spawnedAt])
+}
+
+model MonsterKill {
+  id        Int      @id @default(autoincrement())
+  monsterId Int
+  killerId  Int?
+  killerName String   // denormalized so kills survive user deletion
+  zone      String?
+  killedAt  DateTime @default(now())
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  killer    User?    @relation(fields: [killerId], references: [id], onDelete: SetNull)
+
+  @@index([killedAt])
+}
+
+// ─────────────── Forum ───────────────
+model ForumCategory {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  slug        String        @unique
+  description String?
+  position    Int           @default(0)
+  threads     ForumThread[]
+}
+
+model ForumThread {
+  id         Int           @id @default(autoincrement())
+  title      String
+  authorId   Int
+  categoryId Int
+  pinned     Boolean       @default(false)
+  locked     Boolean       @default(false)
+  views      Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  posts      ForumPost[]
+
+  @@index([categoryId, pinned, updatedAt])
+}
+
+model ForumPost {
+  id        Int         @id @default(autoincrement())
+  threadId  Int
+  authorId  Int
+  body      String
+  createdAt DateTime    @default(now())
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+}
+
+// ─────────────── Payments ───────────────
+model Payment {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  provider      String    // stripe | paypal | hypotatima
+  providerTxId  String    @unique
+  amount        Float
+  currency      String    @default("USD")
+  status        String    @default("pending") // pending | completed | failed | refunded
+  packageKey    String?   // e.g. "silver_1000", "vip_30days"
+  silverAwarded Int       @default(0)
+  vipDaysAwarded Int      @default(0)
+  metadata      String?   // JSON blob for provider-specific extras
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([provider, status])
+  @@index([userId])
+}
+
+// ─────────────── Notifications ───────────────
+// userId null = global notification (broadcast to everyone)
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  type      String   @default("system") // system | forum_reply | payment | gm_message | event | dm
+  title     String
+  body      String?
+  link      String?  // optional URL to open when clicked
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@index([createdAt])
+}
+
+// ─────────────── Direct messages (inbox) ───────────────
+model DirectMessage {
+  id          Int      @id @default(autoincrement())
+  senderId    Int
+  recipientId Int
+  body        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  sender      User     @relation("DMSent", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("DMReceived", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, read, createdAt])
+  @@index([senderId, recipientId])
+}
+
+// ─────────────── Profile wall posts ───────────────
+model ProfilePost {
+  id            Int      @id @default(autoincrement())
+  authorId      Int      // who wrote it
+  profileUserId Int      // whose wall it's on
+  body          String
+  createdAt     DateTime @default(now())
+  author        User     @relation("ProfilePostsAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  profileUser   User     @relation("ProfilePostsReceived", fields: [profileUserId], references: [id], onDelete: Cascade)
+
+  @@index([profileUserId, createdAt])
+}
+
+// ─────────────── Live chat ───────────────
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  authorId  Int
+  channel   String   @default("general")
+  body      String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([channel, createdAt])
+}
