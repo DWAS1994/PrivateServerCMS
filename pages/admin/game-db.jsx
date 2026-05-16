@@ -41,6 +41,7 @@ export async function getServerSideProps({ req, res }) {
     props: {
       user: publicUser(user),
       server: serializeServer(server),
+      demoMode: process.env.DEMO_MODE === "1",
       initial: {
         ...safe,
         lastTestedAt: safe.lastTestedAt
@@ -53,7 +54,7 @@ export async function getServerSideProps({ req, res }) {
   };
 }
 
-export default function AdminGameDb({ user, server, initial }) {
+export default function AdminGameDb({ user, server, initial, demoMode }) {
   const [form, setForm] = useState({
     enabled: initial.enabled,
     host: initial.host,
@@ -137,18 +138,28 @@ export default function AdminGameDb({ user, server, initial }) {
 
   return (
     <AdminLayout user={user} server={server} title="Game Database Connection">
-      <div className="alert alert-info">
-        <b>What is this?</b> Connect the website to your game server's MySQL database
-        (vSRO, jSRO, etc) so registration writes accounts directly into the game, and
-        the Unique History and SOX Drop Log pages show live data from the game.
-        <br />
-        The panel's own data (forum, news, payments, sessions) stays in its
-        Prisma database — these two are separate.
-      </div>
+      {demoMode ? (
+        <div className="alert alert-info" style={{ borderColor: "var(--accent)" }}>
+          <b>🎮 Demo mode.</b> The game-database connection is disabled on this
+          public demo. In a real installation, this is where you'd enter your
+          game server's MySQL credentials. The form below is shown for
+          reference only — Unique History and SOX Drop Log are running on
+          sample data so visitors can see what they'd look like in production.
+        </div>
+      ) : (
+        <div className="alert alert-info">
+          <b>What is this?</b> Connect the website to your game server's MySQL database
+          (vSRO, jSRO, etc) so registration writes accounts directly into the game, and
+          the Unique History and SOX Drop Log pages show live data from the game.
+          <br />
+          The panel's own data (forum, news, payments, sessions) stays in its
+          Prisma database — these two are separate.
+        </div>
+      )}
 
       {msg && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
-      {lastTested.at && (
+      {!demoMode && lastTested.at && (
         <div className={`alert ${lastTested.ok ? "alert-success" : "alert-error"}`}>
           Last test: {lastTested.ok ? "✓ OK" : "✗ Failed"} at{" "}
           {new Date(lastTested.at).toLocaleString()}
@@ -156,7 +167,8 @@ export default function AdminGameDb({ user, server, initial }) {
         </div>
       )}
 
-      <form onSubmit={save} className="card card-pad" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <form onSubmit={save} className="card card-pad" style={{ display: "flex", flexDirection: "column", gap: 14, opacity: demoMode ? 0.6 : 1, pointerEvents: demoMode ? "none" : "auto" }}>
+        <fieldset disabled={demoMode} style={{ border: 0, padding: 0, margin: 0, display: "contents" }}>
         <h2 className="card-title">Connection</h2>
 
         <label className="checkbox">
@@ -214,7 +226,7 @@ export default function AdminGameDb({ user, server, initial }) {
             type="button"
             className="btn btn-secondary"
             onClick={test}
-            disabled={busy || !form.host || !form.database || !form.user}
+            disabled={busy || demoMode || !form.host || !form.database || !form.user}
           >
             {busy ? "Testing…" : "Test connection"}
           </button>
@@ -279,10 +291,11 @@ export default function AdminGameDb({ user, server, initial }) {
         </div>
 
         <div className="row" style={{ gap: 8, marginTop: 8 }}>
-          <button className="btn btn-primary" disabled={busy}>
+          <button className="btn btn-primary" disabled={busy || demoMode}>
             {busy ? "Saving…" : "Save"}
           </button>
         </div>
+        </fieldset>
       </form>
 
       <div className="card card-pad" style={{ marginTop: 20 }}>

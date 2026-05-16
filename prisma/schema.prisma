@@ -181,6 +181,21 @@ model MonsterKill {
   @@index([killedAt])
 }
 
+// SOX drops — used as a local fallback for the /sox-drops page when the
+// game DB isn't connected (e.g. on the demo install). In a real customer
+// install with the game DB connected, this table is empty and /sox-drops
+// pulls from the game's _SoxItemLog table instead.
+model SoxDrop {
+  id         Int      @id @default(autoincrement())
+  playerName String
+  itemName   String
+  rarity     String   // "Star" | "Moon" | "Sun" or a custom label
+  degree     Int?
+  droppedAt  DateTime @default(now())
+
+  @@index([droppedAt])
+}
+
 // ─────────────── Forum ───────────────
 model ForumCategory {
   id          Int           @id @default(autoincrement())

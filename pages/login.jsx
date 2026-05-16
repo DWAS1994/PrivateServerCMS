@@ -40,8 +40,13 @@ export default function Login({ server, discordEnabled }) {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Surface error codes from the Discord OAuth callback redirect
-  const oauthError = typeof router.query.error === "string" ? router.query.error : null;
+  // Surface error codes from the Discord OAuth callback redirect — but
+  // only when Discord login is actually enabled. If someone bookmarked
+  // an old error URL after we disabled Discord, ignore it.
+  const oauthError =
+    discordEnabled && typeof router.query.error === "string"
+      ? router.query.error
+      : null;
   const displayedErr = err || (oauthError && (OAUTH_ERROR_MESSAGES[oauthError] || `Login error: ${oauthError}`));
 
   const submit = async (e) => {

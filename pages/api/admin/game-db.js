@@ -15,6 +15,14 @@ export default async function handler(req, res) {
   const admin = await requireAdmin(req, res);
   if (!admin) return;
 
+  // In demo mode we let admins look at the form (GET) but we refuse any
+  // write/test attempts so the demo can't be used as a free MySQL prober.
+  if (process.env.DEMO_MODE === "1" && req.method !== "GET") {
+    return res.status(403).json({
+      error: "Game DB integration is disabled in demo mode.",
+    });
+  }
+
   if (req.method === "GET") {
     const config = (await getSafeConfig()) || {
       id: 1,

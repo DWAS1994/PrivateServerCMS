@@ -1,4 +1,6 @@
-// /sox-drops — recent SOX (rare) item drops pulled live from the game DB.
+// /sox-drops — recent SOX (rare) item drops.
+// Pulls from the game DB when connected; falls back to the panel's local
+// SoxDrop table for demo / standalone installs.
 import Layout from "@/components/Layout";
 import { prisma, serializeServer } from "@/lib/prisma";
 import { getCurrentUser, publicUser } from "@/lib/auth";
@@ -13,6 +15,8 @@ export async function getServerSideProps({ req, res }) {
 
   let drops = [];
   let error = null;
+  let source = "demo";
+
   if (enabled) {
     try {
       const rows = await gameDb.recentSoxDrops(100);
@@ -28,9 +32,26 @@ export async function getServerSideProps({ req, res }) {
             ? String(r.droppedAt)
             : null,
       }));
+      source = "live";
     } catch (e) {
       error = e.message;
     }
+  }
+
+  // Fallback: pull SOX drops from the panel's own demo table.
+  if (!enabled || (drops.length === 0 && !error)) {
+    const localDrops = await prisma.soxDrop.findMany({
+      orderBy: { droppedAt: "desc" },
+      take: 100,
+    });
+    drops = localDrops.map((d) => ({
+      player: d.playerName,
+      item: d.itemName,
+      degree: d.degree,
+      rarity: d.rarity,
+      droppedAt: d.droppedAt.toISOString(),
+    }));
+    source = "demo";
   }
 
   return {
@@ -40,6 +61,7 @@ export async function getServerSideProps({ req, res }) {
       enabled,
       drops,
       error,
+      source,
     },
   };
 }
@@ -66,7 +88,7 @@ function rarityLabel(r) {
   return { label: String(r), color: "var(--ink-2)" };
 }
 
-export default function SoxDrops({ user, server, enabled, drops, error }) {
+export default function SoxDrops({ user, server, enabled, drops, error, source }) {
   const topPlayers = {};
   for (const d of drops) topPlayers[d.player] = (topPlayers[d.player] || 0) + 1;
   const luckiest = Object.entries(topPlayers).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -77,29 +99,23 @@ export default function SoxDrops({ user, server, enabled, drops, error }) {
         <div className="page-header">
           <div>
             <div className="kicker">Live from game database</div>
+            <div className="kicker">
+              {source === "live" ? "Live from game database" : "Demo data"}
+            </div>
             <h1 className="page-title">SOX Drop Log</h1>
             <p className="page-subtitle">
-              {enabled
-                ? `${drops.length} recent rare item drops`
-                : "Connect the game DB to see live rare drops"}
+              {drops.length} recent rare item drops
             </p>
           </div>
         </div>
 
-        {!enabled && (
-          <div className="alert alert-info">
-            Your administrator hasn't connected the game database yet. Once connected,
-            this page will show rare (Star / Moon / Sun) item drops pulled directly
-            from the game's <code>_SoxItemLog</code> table.
-          </div>
-        )}
         {error && (
           <div className="alert alert-error">
             <b>Couldn't load drops from the game database:</b> {error}
           </div>
         )}
 
-        {enabled && drops.length > 0 && (
+        {drops.length > 0 && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24 }}>
             <div className="card">
               <table className="table">
@@ -161,9 +177,9 @@ export default function SoxDrops({ user, server, enabled, drops, error }) {
           </div>
         )}
 
-        {enabled && drops.length === 0 && !error && (
+        {drops.length === 0 && !error && (
           <div className="card card-pad muted" style={{ textAlign: "center", padding: 60 }}>
-            No rare drops recorded in the game database yet.
+            No rare drops recorded yet.
           </div>
         )}
       </div>

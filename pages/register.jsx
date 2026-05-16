@@ -144,9 +144,6 @@ export default function Register({ server, discordEnabled }) {
               {busy ? "Creating…" : "Create account"}
             </button>
           </form>
-		  <button className="btn btn-primary btn-lg" disabled={busy}>
-			  {busy ? "Downloading" : "Download Client"}
-			 </button>
 
           <p className="muted" style={{ fontSize: 13, marginTop: 18, textAlign: "center" }}>
             Already have an account? <Link href="/login">Login</Link>

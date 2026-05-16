@@ -7,10 +7,8 @@ import { buildAuthorizeUrl, isConfigured } from "@/lib/discord";
 
 export default async function handler(req, res) {
   if (!isConfigured()) {
-    return res.status(503).send(
-      "Discord login is not configured. Set DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, " +
-        "and DISCORD_REDIRECT_URI in .env, then restart the server."
-    );
+    // Silently send them back to login. No error message, no scary 503.
+    return res.redirect(302, "/login");
   }
 
   // CSRF protection: random state we'll verify on the callback. Also stash

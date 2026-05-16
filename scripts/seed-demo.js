@@ -161,26 +161,68 @@ async function main() {
     await prisma.monster.upsert({ where: { name: m.name }, update: {}, create: m });
   }
 
-  // 9. Recent kill log so /unique-history has data even without a game DB
-  const crimson = await prisma.monster.findUnique({ where: { name: "Crimson Dragon" } });
-  const lich = await prisma.monster.findUnique({ where: { name: "Ancient Lich" } });
-  const killSamples = [
-    { mon: crimson, killer: "Briarheart", hoursAgo: 0.5 },
-    { mon: lich, killer: "MorrigansVoid", hoursAgo: 2 },
-    { mon: lich, killer: "Aelinora", hoursAgo: 4 },
-    { mon: crimson, killer: "KaelTheSwift", hoursAgo: 8 },
-    { mon: lich, killer: "Thornwick", hoursAgo: 12 },
-  ];
-  for (const k of killSamples) {
-    if (!k.mon) continue;
-    await prisma.monsterKill.create({
-      data: {
-        monsterId: k.mon.id,
-        killerName: k.killer,
-        zone: k.mon.zone,
-        killedAt: new Date(Date.now() - k.hoursAgo * 3600 * 1000),
-      },
-    });
+  // 9. Recent kill log so /unique-history has data even without a game DB.
+  // Only seed if empty so re-running the script doesn't pile up duplicates.
+  const existingKillCount = await prisma.monsterKill.count();
+  if (existingKillCount === 0) {
+    const crimson = await prisma.monster.findUnique({ where: { name: "Crimson Dragon" } });
+    const lich = await prisma.monster.findUnique({ where: { name: "Ancient Lich" } });
+    const killSamples = [
+      { mon: crimson, killer: "Briarheart",     hoursAgo: 0.3 },
+      { mon: lich,    killer: "MorrigansVoid",  hoursAgo: 1.1 },
+      { mon: lich,    killer: "Aelinora",       hoursAgo: 2.6 },
+      { mon: crimson, killer: "KaelTheSwift",   hoursAgo: 4.2 },
+      { mon: lich,    killer: "Thornwick",      hoursAgo: 5.8 },
+      { mon: lich,    killer: "Briarheart",     hoursAgo: 7.1 },
+      { mon: crimson, killer: "demo_admin",     hoursAgo: 9.4 },
+      { mon: lich,    killer: "MorrigansVoid",  hoursAgo: 11.2 },
+      { mon: lich,    killer: "Aelinora",       hoursAgo: 14.6 },
+      { mon: crimson, killer: "Briarheart",     hoursAgo: 18.0 },
+      { mon: lich,    killer: "KaelTheSwift",   hoursAgo: 22.3 },
+      { mon: lich,    killer: "Thornwick",      hoursAgo: 28.5 },
+    ];
+    for (const k of killSamples) {
+      if (!k.mon) continue;
+      await prisma.monsterKill.create({
+        data: {
+          monsterId: k.mon.id,
+          killerName: k.killer,
+          zone: k.mon.zone,
+          killedAt: new Date(Date.now() - k.hoursAgo * 3600 * 1000),
+        },
+      });
+    }
+  }
+
+  // 9b. SOX drop log. Same idempotency rule.
+  const existingDropCount = await prisma.soxDrop.count();
+  if (existingDropCount === 0) {
+    const soxSamples = [
+      { player: "Briarheart",    item: "Heuksal Spear (Sun)",        rarity: "Sun",  degree: 11, hoursAgo: 0.5 },
+      { player: "Aelinora",      item: "Sage's Robe (Moon)",         rarity: "Moon", degree: 10, hoursAgo: 1.3 },
+      { player: "MorrigansVoid", item: "Necromancer's Wand (Star)",  rarity: "Star", degree: 9,  hoursAgo: 2.0 },
+      { player: "KaelTheSwift",  item: "Wind Walker Bow (Moon)",     rarity: "Moon", degree: 10, hoursAgo: 3.8 },
+      { player: "Thornwick",     item: "Shadowstep Dagger (Sun)",    rarity: "Sun",  degree: 11, hoursAgo: 5.5 },
+      { player: "Briarheart",    item: "Guardian Plate (Star)",      rarity: "Star", degree: 9,  hoursAgo: 7.4 },
+      { player: "Aelinora",      item: "Phoenix Earring (Moon)",     rarity: "Moon", degree: 10, hoursAgo: 9.1 },
+      { player: "demo_admin",    item: "Crimson Crown (Sun)",        rarity: "Sun",  degree: 12, hoursAgo: 11.7 },
+      { player: "MorrigansVoid", item: "Lich's Whisper Amulet (Sun)",rarity: "Sun",  degree: 11, hoursAgo: 13.2 },
+      { player: "Thornwick",     item: "Silent Step Boots (Star)",   rarity: "Star", degree: 9,  hoursAgo: 16.8 },
+      { player: "KaelTheSwift",  item: "Marksman's Gloves (Moon)",   rarity: "Moon", degree: 10, hoursAgo: 19.4 },
+      { player: "Briarheart",    item: "Warlord's Shield (Sun)",     rarity: "Sun",  degree: 11, hoursAgo: 23.1 },
+      { player: "Aelinora",      item: "Starlight Ring (Star)",      rarity: "Star", degree: 9,  hoursAgo: 27.5 },
+    ];
+    for (const d of soxSamples) {
+      await prisma.soxDrop.create({
+        data: {
+          playerName: d.player,
+          itemName: d.item,
+          rarity: d.rarity,
+          degree: d.degree,
+          droppedAt: new Date(Date.now() - d.hoursAgo * 3600 * 1000),
+        },
+      });
+    }
   }
 
   // 10. Welcome notification
