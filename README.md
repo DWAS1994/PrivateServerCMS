@@ -6,6 +6,7 @@ payment integration, real admin tools.
 
 ## Features
 
+- **Silkroad-inspired theme** — gold + burgundy + lacquered-wood aesthetic, ornamental Eastern fantasy styling built entirely from original CSS/SVG. Asset slots in `public/theme/` for customers to drop their own banner, class icons, and logo (see `public/theme/README.md`)
 - **Database-backed registration & login** — bcrypt password hashing, cookie-based sessions
 - **Game DB integration** — connect the panel to your game's MySQL database (vSRO etc) so registrations create in-game accounts in real time, and live pages pull data straight from the game tables
 - **Discord login button** — real OAuth flow with account linking

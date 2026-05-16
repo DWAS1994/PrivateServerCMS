@@ -39,7 +39,7 @@ async function main() {
       email: adminEmail,
       passwordHash,
       role: "admin",
-      silver: 0,
+      silk: 0,
       level: 1,
     },
   });

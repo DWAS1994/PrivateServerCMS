@@ -1,4 +1,4 @@
-// /admin/users — search users, change role, ban/unban, edit silver
+// /admin/users — search users, change role, ban/unban, edit silk
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { prisma, serializeServer } from "@/lib/prisma";
@@ -115,9 +115,9 @@ export default function AdminUsers({ user, server, initialUsers }) {
               )}
             </div>
             <div className="field">
-              <label className="field-label">Silver</label>
-              <input className="input" type="number" min={0} value={editing.silver}
-                onChange={(e) => setEditing({ ...editing, silver: parseInt(e.target.value, 10) || 0 })} />
+              <label className="field-label">Silk</label>
+              <input className="input" type="number" min={0} value={editing.silk}
+                onChange={(e) => setEditing({ ...editing, silk: parseInt(e.target.value, 10) || 0 })} />
             </div>
             <div className="field" style={{ justifyContent: "center" }}>
               <label className="checkbox">
@@ -151,7 +151,7 @@ export default function AdminUsers({ user, server, initialUsers }) {
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Silver</th>
+              <th>Silk</th>
               <th>Joined</th>
               <th>Status</th>
               <th></th>
@@ -170,7 +170,7 @@ export default function AdminUsers({ user, server, initialUsers }) {
                     {u.role}
                   </span>
                 </td>
-                <td className="mono">{u.silver.toLocaleString()}</td>
+                <td className="mono">{u.silk.toLocaleString()}</td>
                 <td className="muted" style={{ fontSize: 12 }}>
                   {new Date(u.createdAt).toLocaleDateString()}
                 </td>
@@ -187,7 +187,7 @@ export default function AdminUsers({ user, server, initialUsers }) {
                   <button className="btn btn-ghost btn-sm" onClick={() => setEditing({
                     id: u.id, username: u.username, role: u.role,
                     banned: u.banned, banReason: u.banReason || "",
-                    silver: u.silver,
+                    silk: u.silk,
                   })}>
                     Edit
                   </button>

@@ -42,7 +42,7 @@ async function main() {
       email: "demo_admin@example.com",
       passwordHash,
       role: "admin",
-      silver: 50000,
+      silk: 50000,
       level: 80,
       characterName: "ShadowBlade",
       characterClass: "Warrior",
@@ -51,11 +51,11 @@ async function main() {
 
   // 4. A handful of regular users to make the community look alive
   const players = [
-    { username: "Aelinora", level: 72, class: "Mage", silver: 8200 },
-    { username: "Thornwick", level: 65, class: "Rogue", silver: 4400 },
-    { username: "Briarheart", level: 80, class: "Warrior", silver: 12000 },
-    { username: "MorrigansVoid", level: 75, class: "Necromancer", silver: 6800 },
-    { username: "KaelTheSwift", level: 70, class: "Archer", silver: 5100 },
+    { username: "Aelinora", level: 72, class: "Mage", silk: 8200 },
+    { username: "Thornwick", level: 65, class: "Rogue", silk: 4400 },
+    { username: "Briarheart", level: 80, class: "Warrior", silk: 12000 },
+    { username: "MorrigansVoid", level: 75, class: "Necromancer", silk: 6800 },
+    { username: "KaelTheSwift", level: 70, class: "Archer", silk: 5100 },
   ];
   for (const p of players) {
     await prisma.user.upsert({
@@ -66,7 +66,7 @@ async function main() {
         email: `${p.username.toLowerCase()}@example.com`,
         passwordHash,
         role: "player",
-        silver: p.silver,
+        silk: p.silk,
         level: p.level,
         characterName: p.username,
         characterClass: p.class,
@@ -127,7 +127,7 @@ async function main() {
       startsAt: new Date(now + 2 * 60 * 60 * 1000), // 2 hours from now
       endsAt: new Date(now + 3 * 60 * 60 * 1000),
       location: "Volcano Peak",
-      rewards: "Unique drops, 50,000 silver to top damage dealer",
+      rewards: "Unique drops, 50,000 silk to top damage dealer",
     },
     {
       title: "Double EXP Weekend",

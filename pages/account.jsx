@@ -68,9 +68,9 @@ export default function Account({ user, server, payments }) {
             </div>
 
             <div style={{ marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--line-1)" }}>
-              <div className="kicker" style={{ marginBottom: 6 }}>Silver balance</div>
+              <div className="kicker" style={{ marginBottom: 6 }}>Silk balance</div>
               <div style={{ fontFamily: "var(--display)", fontSize: 28, fontWeight: 700, color: "var(--gold)" }}>
-                {user.silver.toLocaleString()}
+                {user.silk.toLocaleString()}
               </div>
             </div>
 

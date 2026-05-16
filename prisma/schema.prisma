@@ -18,7 +18,7 @@ model User {
   email          String        @unique
   passwordHash   String
   role           String        @default("player") // player | gm | admin
-  silver         Int           @default(0)        // in-game currency credit
+  silk           Int           @default(0)        // in-game cash-shop currency
   vipUntil       DateTime?
   banned         Boolean       @default(false)
   banReason      String?
@@ -230,7 +230,7 @@ model Payment {
   currency      String    @default("USD")
   status        String    @default("pending") // pending | completed | failed | refunded
   packageKey    String?   // e.g. "silver_1000", "vip_30days"
-  silverAwarded Int       @default(0)
+  silkAwarded   Int       @default(0)
   vipDaysAwarded Int      @default(0)
   metadata      String?   // JSON blob for provider-specific extras
   createdAt     DateTime  @default(now())

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { id, role, banned, banReason, silver } = req.body || {};
+    const { id, role, banned, banReason, silk } = req.body || {};
     if (!id) return res.status(400).json({ error: "id required" });
 
     // Don't let admins demote themselves
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     if (role && ["player", "gm", "admin"].includes(role)) data.role = role;
     if (banned !== undefined) data.banned = !!banned;
     if (banReason !== undefined) data.banReason = banReason || null;
-    if (silver !== undefined) data.silver = Math.max(0, parseInt(silver, 10) || 0);
+    if (silk !== undefined) data.silk = Math.max(0, parseInt(silk, 10) || 0);
 
     const updated = await prisma.user.update({ where: { id: parseInt(id, 10) }, data });
     return res.json(publicUser(updated));

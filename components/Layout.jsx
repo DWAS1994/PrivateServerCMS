@@ -21,7 +21,7 @@ const NAV = [
 
 // Color from a string (stable hash → hue) — used to color avatars
 function colorFromName(name) {
-  if (!name) return "#5BFF9C";
+  if (!name) return "#E8B547";
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   const hue = Math.abs(hash) % 360;
@@ -120,15 +120,14 @@ export default function Layout({ user, server, demoMode, children }) {
   }
 
   const totalUnread = unreadCount + unreadDMs;
-  const avatarColor = user ? colorFromName(user.username) : "#5BFF9C";
+  const avatarColor = user ? colorFromName(user.username) : "#E8B547";
 
   return (
     <div className="shell">
       {demoMode && (
         <div
+          className="demo-banner"
           style={{
-            background: "linear-gradient(90deg, var(--accent), #3FE0C5)",
-            color: "var(--accent-ink)",
             padding: "8px 16px",
             textAlign: "center",
             fontSize: 13,
@@ -309,8 +308,8 @@ export default function Layout({ user, server, demoMode, children }) {
                     </span>
                     <div className="user-info">
                       <span className="user-name">{user.username}</span>
-                      <span className="user-silver">
-                        💰 {user.silver.toLocaleString()}
+                      <span className="user-silk">
+                        💰 {user.silk.toLocaleString()}
                       </span>
                     </div>
                     <svg

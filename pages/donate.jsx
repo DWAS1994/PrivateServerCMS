@@ -1,4 +1,4 @@
-// /donate — purchase silver/VIP packages via Stripe, PayPal, or Hypotatima
+// /donate — purchase silk/VIP packages via Stripe, PayPal, or Hypotatima
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -93,7 +93,7 @@ export default function Donate({ user, server, providers, flash }) {
             <h1 className="page-title">Donate</h1>
             <p className="page-subtitle">
               Server costs are real. Every contribution helps keep the lights on — and you get
-              in-game silver and VIP perks in return.
+              in-game silk and VIP perks in return.
             </p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function Donate({ user, server, providers, flash }) {
           <div className="alert alert-info">
             <Link href="/login?next=/donate">Login</Link> or{" "}
             <Link href="/register">create an account</Link> first — donations are tied to
-            your account so silver/VIP can be credited.
+            your account so silk/VIP can be credited.
           </div>
         )}
 
@@ -140,9 +140,9 @@ export default function Donate({ user, server, providers, flash }) {
               </div>
               <div className="pkg-desc">{pkg.description}</div>
               <div className="row" style={{ gap: 6, fontSize: 12, flexWrap: "wrap" }}>
-                {pkg.silver > 0 && (
+                {pkg.silk > 0 && (
                   <span className="badge badge-gold">
-                    💰 {pkg.silver.toLocaleString()} silver
+                    💰 {pkg.silk.toLocaleString()} silk
                   </span>
                 )}
                 {pkg.vipDays > 0 && (

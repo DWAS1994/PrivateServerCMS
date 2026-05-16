@@ -18,7 +18,7 @@ export async function getServerSideProps({ req, res }) {
 }
 
 function colorFromName(name) {
-  if (!name) return "#5BFF9C";
+  if (!name) return "#E8B547";
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return `hsl(${Math.abs(hash) % 360}, 70%, 60%)`;
