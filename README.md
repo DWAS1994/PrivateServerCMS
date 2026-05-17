@@ -24,6 +24,18 @@ payment integration, real admin tools.
 - **Payments** — Stripe, PayPal, and Hypotatima all wired up with webhook handlers
 - **Admin panel** — full CRUD for everything, role-based access (player / GM / admin)
 
+
+## Silkroad UI asset slots
+
+The homepage has been updated to use Silkroad Online-style screenshot slots. Add your own in-game images here:
+
+- `public/theme/hero.jpg` — large homepage hero image
+- `public/theme/ingame-hotan.jpg` — trade route/city showcase
+- `public/theme/ingame-unique.jpg` — unique boss showcase
+- `public/theme/ingame-jobwar.jpg` — PvP/job war/fortress showcase
+
+Fallback SVGs are included so the CMS remains polished even before real screenshots are added. See `public/theme/README.md` for recommended sizes.
+
 ## Quick start
 
 ```bash

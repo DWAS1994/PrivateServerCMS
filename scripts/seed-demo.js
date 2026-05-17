@@ -241,19 +241,17 @@ async function main() {
     });
   }
 
-  // 10b. Download placeholders so /downloads has content on the demo.
-  // These are example entries — the real download URLs are placeholders
-  // (example.com). On a real install, the admin replaces them via
-  // /admin/downloads with real hosted URLs (Mega, Google Drive, CDN).
+  // 10b. Download placeholder so /downloads has content on the demo.
+  // Just the client — the public page is focused on a single download.
+  // Real installs add their actual hosted URL via /admin/downloads.
   const existingDownloadCount = await prisma.downloadItem.count();
   if (existingDownloadCount === 0) {
-    const downloads = [
-      // Featured / primary client
-      {
+    await prisma.downloadItem.create({
+      data: {
         title: "Phoenix MMORPG — Full Client",
         description:
-          "Complete game client. New players start here. Includes all maps, " +
-          "models, and audio. Setup takes about 5 minutes after download.",
+          "Complete game client. Includes all maps, models, audio, and the " +
+          "launcher. Setup takes about 5 minutes after download finishes.",
         category: "client",
         url: "https://example.com/phoenix-client-1.4.2.zip",
         mirrorUrl: "https://example.com/mirror/phoenix-client-1.4.2.zip",
@@ -262,84 +260,9 @@ async function main() {
         iconEmoji: "💾",
         featured: true,
         position: 0,
+        downloads: 1487,
       },
-      // Patcher
-      {
-        title: "Patcher (recommended)",
-        description:
-          "Already have an older version? The patcher only downloads what's " +
-          "changed. Much faster than re-downloading the full client.",
-        category: "patcher",
-        url: "https://example.com/phoenix-patcher.exe",
-        fileSize: "3.8 MB",
-        version: "v1.4.2",
-        iconEmoji: "🔄",
-        position: 0,
-      },
-      // Tools
-      {
-        title: "Bot Detection Tool",
-        description:
-          "Optional anti-bot scanner. Reports suspicious activity to game " +
-          "masters. Players who run this help keep the server fair.",
-        category: "tools",
-        url: "https://example.com/phoenix-antibot.exe",
-        fileSize: "4.1 MB",
-        version: "v2.0",
-        iconEmoji: "🛡",
-        position: 0,
-      },
-      {
-        title: "FPS Boost Config",
-        description:
-          "Tweaked config file that bumps FPS on older machines. Drop it in " +
-          "your client folder, overwrite when prompted.",
-        category: "tools",
-        url: "https://example.com/phoenix-fps-config.zip",
-        fileSize: "12 KB",
-        iconEmoji: "⚡",
-        position: 10,
-      },
-      // Optional
-      {
-        title: "Original Soundtrack",
-        description:
-          "37-track OST in 320kbps MP3. Composed by the original team. " +
-          "Listen offline anytime.",
-        category: "optional",
-        url: "https://example.com/phoenix-ost.zip",
-        fileSize: "412 MB",
-        iconEmoji: "🎵",
-        position: 0,
-      },
-      {
-        title: "Custom UI Skin Pack",
-        description:
-          "Community-made UI skins: minimal dark, classic gold, neon-pink, " +
-          "low-contrast accessibility theme.",
-        category: "optional",
-        url: "https://example.com/phoenix-ui-skins.zip",
-        fileSize: "28 MB",
-        iconEmoji: "🎨",
-        position: 10,
-      },
-      {
-        title: "Lore Codex (PDF)",
-        description:
-          "300-page lore companion. World history, faction backstories, " +
-          "character bios. Spoiler-free for new players.",
-        category: "optional",
-        url: "https://example.com/phoenix-lore-codex.pdf",
-        fileSize: "48 MB",
-        iconEmoji: "📖",
-        position: 20,
-      },
-    ];
-    for (const d of downloads) {
-      await prisma.downloadItem.create({
-        data: { ...d, downloads: Math.floor(Math.random() * 2000) + 100 },
-      });
-    }
+    });
   }
 
   // 11. Some chat messages so /chat doesn't look empty

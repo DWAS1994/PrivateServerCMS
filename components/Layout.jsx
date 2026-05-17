@@ -16,7 +16,7 @@ const NAV = [
   { href: "/events", label: "Events" },
   { href: "/unique-history", label: "Unique History" },
   { href: "/sox-drops", label: "SOX Drops" },
-  { href: "/downloads", label: "Downloads" },
+  { href: "/downloads", label: "Download" },
   { href: "/donate", label: "Donate" },
 ];
 

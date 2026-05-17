@@ -121,6 +121,7 @@ input, textarea, select, button {
   align-items: center;
   gap: 10px;
   color: var(--ink-1);
+  flex-shrink: 0;
 }
 .brand-mark {
   width: 32px;
@@ -136,8 +137,11 @@ input, textarea, select, button {
 .topnav-links {
   display: flex;
   gap: 4px;
-  margin-left: 20px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.topnav-links::-webkit-scrollbar { display: none; }
 .topnav-link {
   padding: 8px 12px;
   color: var(--ink-2);
@@ -145,6 +149,7 @@ input, textarea, select, button {
   font-weight: 500;
   border-radius: 6px;
   transition: all 0.12s;
+  white-space: nowrap;
 }
 .topnav-link:hover {
   background: var(--bg-2);
@@ -155,7 +160,7 @@ input, textarea, select, button {
   background: var(--bg-2);
   color: var(--ink-1);
 }
-.topnav-spacer { flex: 1; }
+.topnav-spacer { display: none; } /* legacy — now handled by flex on .topnav-links */
 .topnav-user {
   display: flex;
   align-items: center;
@@ -578,6 +583,7 @@ input, textarea, select, button {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 /* Generic icon button (used for bell) */
@@ -1339,3 +1345,324 @@ h1, h2, h3, .section-title, .page-title, .card-title, .brand {
 .class-icon.rogue   { background-image: url("/theme/class-rogue.png"); }
 .class-icon.archer  { background-image: url("/theme/class-archer.png"); }
 .class-icon.cleric  { background-image: url("/theme/class-cleric.png"); }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Hero banner slot — customer drops /public/theme/hero.jpg to set their
+   own background image. Falls back gracefully to a CSS-only gradient
+   when no file is present. The default has a stylized "Eastern mountain
+   silhouette" rendered in original SVG.
+   ────────────────────────────────────────────────────────────────────── */
+.hero-themed {
+  position: relative;
+  padding: 100px 0 80px;
+  isolation: isolate;
+}
+.hero-themed .hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    /* (1) Optional customer image — invisible if file missing */
+    url("/theme/hero.jpg") center/cover no-repeat,
+    /* (2) Original SVG fallback: stylized mountain silhouette + sun disk */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 600' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='sky' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23241612'/><stop offset='100%25' stop-color='%230F0907'/></linearGradient><radialGradient id='sun' cx='50%25' cy='30%25' r='25%25'><stop offset='0%25' stop-color='%23E8B547' stop-opacity='0.45'/><stop offset='100%25' stop-color='%23E8B547' stop-opacity='0'/></radialGradient></defs><rect width='1600' height='600' fill='url(%23sky)'/><circle cx='800' cy='180' r='220' fill='url(%23sun)'/><circle cx='800' cy='180' r='52' fill='%23E8B547' opacity='0.18'/><path d='M0 480 L120 420 L240 460 L380 380 L520 440 L660 360 L820 420 L980 340 L1140 400 L1280 320 L1420 380 L1600 340 L1600 600 L0 600 Z' fill='%23150E0A' opacity='0.85'/><path d='M0 540 L160 500 L320 530 L480 470 L640 510 L800 460 L960 500 L1120 450 L1280 490 L1440 440 L1600 480 L1600 600 L0 600 Z' fill='%230A0605' opacity='0.95'/></svg>") center/cover no-repeat,
+    linear-gradient(180deg, #1A1108 0%, #0F0907 100%);
+}
+.hero-themed .hero-bg::after {
+  /* Soft fade to page color at the bottom so the hero blends in */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, var(--bg-0) 100%);
+  pointer-events: none;
+}
+.hero-themed .hero-inner {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Silkroad landing polish: screenshot-first hero + in-game showcase cards
+   Drop real screenshots at /public/theme/hero.jpg, ingame-hotan.jpg,
+   ingame-unique.jpg, and ingame-jobwar.jpg.
+   ────────────────────────────────────────────────────────────────────── */
+body {
+  background:
+    radial-gradient(circle at 18% -10%, rgba(232,181,71,0.12), transparent 34rem),
+    radial-gradient(circle at 88% 8%, rgba(178,55,55,0.10), transparent 30rem),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 38%, var(--bg-0));
+}
+
+.topnav {
+  background: rgba(13, 8, 6, 0.76);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.22);
+}
+
+.brand-mark,
+.icon-btn,
+.user-trigger,
+.card,
+.status-card,
+.pkg,
+.admin-sidebar,
+.dropdown-panel {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 34px rgba(0,0,0,0.22);
+}
+
+.btn {
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent) 55%, #B87826);
+  border-color: rgba(255, 214, 107, 0.45);
+}
+.btn-secondary {
+  background: linear-gradient(135deg, rgba(178,55,55,0.95), rgba(91,33,26,0.95));
+  border-color: rgba(212,80,80,0.35);
+  color: var(--ink-1);
+}
+.btn-ghost {
+  border-color: rgba(232,181,71,0.18);
+}
+
+.hero {
+  min-height: 620px;
+  padding: 84px 0 86px;
+  text-align: left;
+  background:
+    linear-gradient(90deg, rgba(15,9,7,0.94), rgba(15,9,7,0.70) 42%, rgba(15,9,7,0.92)),
+    url('/theme/hero.jpg') center / cover no-repeat,
+    radial-gradient(circle at 70% 20%, rgba(232,181,71,0.18), transparent 36rem),
+    linear-gradient(135deg, #140b07, #21120c 55%, #0d0806);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 170px;
+  background: linear-gradient(180deg, transparent, var(--bg-0));
+  pointer-events: none;
+}
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  align-items: center;
+  gap: 44px;
+}
+.hero-copy {
+  max-width: 690px;
+}
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border: 1px solid rgba(232,181,71,0.25);
+  border-radius: 999px;
+  background: rgba(26,19,15,0.72);
+  color: var(--accent-bright);
+}
+.hero h1 {
+  font-size: clamp(44px, 6vw, 78px);
+  letter-spacing: -0.055em;
+  text-shadow: 0 10px 36px rgba(0,0,0,0.55);
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, #fff0ba, var(--accent-bright) 44%, #b97725);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p {
+  margin: 0 0 32px;
+  max-width: 620px;
+  color: #dcc99f;
+  font-size: 18px;
+}
+.hero-media {
+  position: relative;
+  border: 1px solid rgba(232,181,71,0.32);
+  border-radius: 26px;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(232,181,71,0.18), rgba(178,55,55,0.10));
+  box-shadow: 0 26px 70px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.10);
+  transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+}
+.hero-media::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  border-radius: 34px;
+  background: radial-gradient(circle at 50% 10%, rgba(232,181,71,0.22), transparent 58%);
+  filter: blur(18px);
+  z-index: -1;
+}
+.hero-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  filter: saturate(1.04) contrast(1.04);
+}
+.hero-media-panel {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  padding: 10px 14px;
+  border: 1px solid rgba(232,181,71,0.28);
+  border-radius: 999px;
+  background: rgba(15,9,7,0.74);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--ink-1);
+  font-family: var(--display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.hero-media-panel-top { top: 24px; }
+.hero-media-panel-bottom { bottom: 24px; }
+
+.status-grid {
+  gap: 14px;
+}
+.status-card {
+  border-color: rgba(232,181,71,0.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), transparent),
+    rgba(26,19,15,0.92);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 24px;
+}
+
+.game-showcase {
+  margin-bottom: 30px;
+}
+.showcase-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.showcase-heading p {
+  max-width: 500px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.showcase-heading code {
+  color: var(--accent-bright);
+  background: rgba(232,181,71,0.09);
+  border: 1px solid rgba(232,181,71,0.14);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.showcase-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(232,181,71,0.17);
+  border-radius: 18px;
+  background: rgba(26,19,15,0.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 20px 45px rgba(0,0,0,0.24);
+}
+.showcase-image-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.showcase-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+.showcase-card:hover .showcase-image {
+  transform: scale(1.045);
+  filter: saturate(1.1) contrast(1.05);
+}
+.showcase-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 32%, rgba(15,9,7,0.86));
+}
+.showcase-copy {
+  padding: 16px;
+}
+.showcase-eyebrow {
+  color: var(--accent-bright);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.showcase-copy h3 {
+  margin-top: 5px;
+  font-size: 18px;
+}
+.showcase-copy p {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 980px) {
+  .hero {
+    min-height: auto;
+    padding: 64px 0 76px;
+    text-align: center;
+  }
+  .hero-split,
+  .content-grid,
+  .showcase-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-copy,
+  .hero p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero-cta,
+  .showcase-heading {
+    justify-content: center;
+    align-items: center;
+  }
+  .showcase-heading {
+    text-align: center;
+    flex-direction: column;
+  }
+  .hero-media {
+    max-width: 620px;
+    margin: 0 auto;
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-cta {
+    display: grid;
+    width: 100%;
+  }
+  .hero-media-panel {
+    left: 18px;
+    right: 18px;
+    font-size: 10px;
+  }
+}

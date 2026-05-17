@@ -1,4 +1,6 @@
 // /forum — list of categories with thread/post counts and latest activity
+import { useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { prisma, serializeServer } from "@/lib/prisma";
@@ -52,6 +54,39 @@ export async function getServerSideProps({ req, res }) {
 }
 
 export default function ForumIndex({ user, server, cats }) {
+  const router = useRouter();
+  const [composing, setComposing] = useState(false);
+  const [form, setForm] = useState({
+    categorySlug: cats[0]?.slug || "",
+    title: "",
+    body: "",
+  });
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setErr("");
+    setBusy(true);
+    try {
+      const r = await fetch("/api/forum/threads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        setErr(data.error || "Failed to create thread.");
+        setBusy(false);
+        return;
+      }
+      router.push(`/forum/thread/${data.id}`);
+    } catch {
+      setErr("Network error.");
+      setBusy(false);
+    }
+  };
+
   return (
     <Layout user={user} server={server}>
       <div className="container page">
@@ -65,7 +100,69 @@ export default function ForumIndex({ user, server, cats }) {
               {cats.reduce((s, c) => s + c.postCount, 0)} posts
             </p>
           </div>
+          {user ? (
+            !composing && (
+              <button className="btn btn-primary" onClick={() => setComposing(true)}>
+                + New thread
+              </button>
+            )
+          ) : (
+            <Link href="/login?next=/forum" className="btn btn-secondary">
+              Login to post
+            </Link>
+          )}
         </div>
+
+        {composing && user && (
+          <div className="card card-pad" style={{ marginBottom: 20 }}>
+            <h2 className="section-title" style={{ marginTop: 0 }}>New Thread</h2>
+            {err && <div className="alert alert-error">{err}</div>}
+            <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div className="field">
+                <label className="field-label">Category</label>
+                <select
+                  className="select"
+                  value={form.categorySlug}
+                  onChange={(e) => setForm({ ...form, categorySlug: e.target.value })}
+                  required
+                >
+                  {cats.map((c) => (
+                    <option key={c.slug} value={c.slug}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label className="field-label">Title</label>
+                <input
+                  className="input"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  maxLength={200}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="field">
+                <label className="field-label">Body</label>
+                <textarea
+                  className="textarea"
+                  rows={6}
+                  value={form.body}
+                  onChange={(e) => setForm({ ...form, body: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="row" style={{ gap: 8 }}>
+                <button className="btn btn-primary" disabled={busy || !form.title.trim() || !form.body.trim()}>
+                  {busy ? "Posting…" : "Create thread"}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setComposing(false)} disabled={busy}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <div className="card">
           <div className="forum-cat" style={{ background: "var(--bg-2)", cursor: "default" }}>

@@ -1,6 +1,7 @@
 // Homepage — server status hero, latest news, upcoming events
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import GameShowcase from "@/components/GameShowcase";
 import { prisma, serializeServer } from "@/lib/prisma";
 import { getCurrentUser, publicUser } from "@/lib/auth";
 
@@ -51,46 +52,63 @@ export default function Home({ user, server, news, events, onlineCount, totalAcc
   return (
     <Layout user={user} server={server} demoMode={demoMode}>
       {/* Hero */}
-      <section className="hero">
-        <div className="container hero-inner">
-          <div className="kicker" style={{ marginBottom: 14 }}>
-            {server?.online ? (
-              <>
-                <span className="dot dot-online" /> Server online
-              </>
-            ) : (
-              <>
-                <span className="dot dot-offline" /> Server offline
-              </>
-            )}
-          </div>
-          <h1>
-            {serverName}
-            <br />
-            <span className="accent">{server?.motd || "Begin your adventure."}</span>
-          </h1>
-          <p>
-            High rates, dedicated staff, active community. Register an account, download the
-            client, and you'll be in-game in minutes.
-          </p>
-          <div className="hero-cta">
-            {user ? (
-              <Link href="/account" className="btn btn-primary btn-lg">
-                My Account
+      <section className="hero hero-themed">
+        <div className="hero-bg" aria-hidden="true" />
+        <div className="container hero-inner hero-split">
+          <div className="hero-copy">
+            <div className="kicker hero-kicker">
+              {server?.online ? (
+                <>
+                  <span className="dot dot-online" /> Server online
+                </>
+              ) : (
+                <>
+                  <span className="dot dot-offline" /> Server offline
+                </>
+              )}
+            </div>
+            <h1>
+              {serverName}
+              <br />
+              <span className="accent">{server?.motd || "Begin your Silkroad adventure."}</span>
+            </h1>
+            <p>
+              A private Silkroad Online hub for trade routes, unique hunts, fortress wars,
+              job battles, news, downloads, and community events.
+            </p>
+            <div className="hero-cta">
+              {user ? (
+                <Link href="/account" className="btn btn-primary btn-lg">
+                  My Account
+                </Link>
+              ) : (
+                <>
+                  <Link href="/register" className="btn btn-primary btn-lg">
+                    Start Journey
+                  </Link>
+                  <Link href="/login" className="btn btn-secondary btn-lg">
+                    Login
+                  </Link>
+                </>
+              )}
+              <Link href="/downloads" className="btn btn-ghost btn-lg">
+                Download Client
               </Link>
-            ) : (
-              <>
-                <Link href="/register" className="btn btn-primary btn-lg">
-                  Register Now
-                </Link>
-                <Link href="/login" className="btn btn-secondary btn-lg">
-                  Login
-                </Link>
-              </>
-            )}
-            <Link href="/donate" className="btn btn-ghost btn-lg">
-              Support the Server
-            </Link>
+            </div>
+          </div>
+
+          <div className="hero-media" aria-label="Silkroad Online screenshot preview">
+            <img
+              className="hero-image"
+              src="/theme/hero.jpg"
+              alt="Silkroad Online private server preview"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = "/theme/fallback-hero.svg";
+              }}
+            />
+            <div className="hero-media-panel hero-media-panel-top">CHN · EU · Job War</div>
+            <div className="hero-media-panel hero-media-panel-bottom">Unique spawns · Fortress · Caravan runs</div>
           </div>
         </div>
       </section>
@@ -129,7 +147,9 @@ export default function Home({ user, server, news, events, onlineCount, totalAcc
       </div>
 
       <div className="container page" style={{ marginTop: 24 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+        <GameShowcase />
+
+        <div className="content-grid">
           {/* News */}
           <div>
             <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
