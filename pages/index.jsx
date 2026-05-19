@@ -46,6 +46,14 @@ export async function getServerSideProps({ req, res }) {
   };
 }
 
+const PARTNERS = [
+  {
+    name: "elitepvpers",
+    url: "https://elitepvpers.de",
+    description: "The largest community for MMO private servers, guides, and trading.",
+  },
+];
+
 export default function Home({ user, server, news, events, onlineCount, totalAccounts, demoMode }) {
   const serverName = server?.serverName || "MMORPG Server";
 
@@ -73,8 +81,7 @@ export default function Home({ user, server, news, events, onlineCount, totalAcc
               <span className="accent">{server?.motd || "Begin your Silkroad adventure."}</span>
             </h1>
             <p>
-              A private Silkroad Online hub for trade routes, unique hunts, fortress wars,
-              job battles, news, downloads, and community events.
+              A private server CMS to ensure all you need to maintain your server in one secure place.
             </p>
             <div className="hero-cta">
               {user ? (
@@ -240,10 +247,52 @@ export default function Home({ user, server, news, events, onlineCount, totalAcc
                 <Link href="/donate" className="btn btn-ghost btn-sm" style={{ justifyContent: "flex-start" }}>
                   → Support the server
                 </Link>
+                <Link href="/partners" className="btn btn-ghost btn-sm" style={{ justifyContent: "flex-start" }}>
+                  → Partners
+                </Link>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Partners */}
+        <section style={{ marginTop: 40 }}>
+          <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
+            <h2 className="section-title" style={{ marginBottom: 0 }}>Partners</h2>
+            <Link href="/partners" className="btn btn-ghost btn-sm">View all →</Link>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {PARTNERS.map((partner) => (
+              <a
+                key={partner.url}
+                href={partner.url}
+                target="_blank"
+                rel="noopener"
+                className="card card-pad"
+                style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              >
+                <div className="kicker" style={{ color: "var(--accent)", marginBottom: 6 }}>
+                  Partner
+                </div>
+                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>
+                  {partner.name}
+                </div>
+                <div className="muted" style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>
+                  {partner.description}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-3)" }}>
+                  {partner.url.replace(/^https?:\/\//, "")} ↗
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
       </div>
     </Layout>
   );
